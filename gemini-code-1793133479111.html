@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مَشهد | MASHHAD — منصة المشاهد الرقمية 2027</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #420A14;        /* عنابي فاخر */
+      --accent: #D4A359;         /* ذهبي مطفي */
+      --bg-light: #FDFBF8;       
+      --text-dark: #1A1C23;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    /* Navbar منفصل وثابت في أعلى الصفحة يتضمن أقسام المنصة */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 75px;
+      background: rgba(253, 251, 248, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(212, 163, 89, 0.25);
+      padding: 0 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 9999;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .brand-logo-img {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    .nav-btn {
+      background: var(--primary);
+      color: #FFF;
+      padding: 9px 24px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      border: 1px solid var(--accent);
+    }
+
+    .nav-btn:hover {
+      background: var(--accent);
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* خلفية الفيديوهات ثلاثية الأبعاد ملء الشاشة بدون تكرار عند الوقوف */
+    .bg-video-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .bg-video-container video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      mix-blend-mode: multiply;
+      opacity: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: opacity 1.2s ease-in-out;
+    }
+
+    .bg-video-container video.active {
+      opacity: 1;
+    }
+
+    /* زر الصوت للجوال */
+    .mobile-audio-btn {
+      position: fixed;
+      bottom: 25px;
+      left: 25px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(66, 10, 20, 0.95);
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 998;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      font-size: 1.3rem;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-audio-btn:hover {
+      transform: scale(1.1);
+      background: var(--accent);
+      color: var(--primary);
+    }
+
+    /* هيكلة المقاطع والتوزيع الديناميكي للنصوص */
+    .scene-section {
+      min-height: 100vh;
+      width: 100vw;
+      position: relative;
+      z-index: 2;
+      padding: 100px 6vw 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* توزيع عناصر النصوص في أماكن متفرقة داخل كل قسم */
+    .pos-top-right { align-self: flex-start; text-align: right; max-width: 450px; }
+    .pos-top-left { align-self: flex-end; text-align: right; max-width: 450px; }
+    .pos-bottom-right { align-self: flex-start; margin-top: auto; max-width: 480px; }
+    .pos-bottom-left { align-self: flex-end; margin-top: auto; max-width: 480px; }
+    .pos-center-bottom { align-self: center; text-align: center; margin-top: auto; max-width: 600px; }
+
+    /* أنيميشن الظهور والاختفاء للنصوص المفرقة */
+    .anim-item {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      margin-bottom: 15px;
+    }
+
+    .scene-section.active .anim-item {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .scene-section.active .anim-item:nth-child(1) { transition-delay: 0.15s; }
+    .scene-section.active .anim-item:nth-child(2) { transition-delay: 0.35s; }
+    .scene-section.active .anim-item:nth-child(3) { transition-delay: 0.55s; }
+
+    .scene-tag {
+      display: inline-block;
+      color: var(--primary);
+      background: rgba(212, 163, 89, 0.25);
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: 1px solid var(--accent);
+    }
+
+    .scene-title {
+      font-size: 3rem;
+      color: var(--primary);
+      font-weight: 900;
+      line-height: 1.25;
+      text-shadow: 0 2px 10px rgba(253, 251, 248, 0.9);
+    }
+
+    .scene-desc {
+      font-size: 1.2rem;
+      color: var(--text-dark);
+      font-weight: 600;
+      line-height: 1.7;
+      text-shadow: 0 1px 5px rgba(253, 251, 248, 0.9);
+    }
+
+    .feature-bullets {
+      list-style: none;
+    }
+
+    .feature-bullets li {
+      position: relative;
+      padding-right: 24px;
+      margin-bottom: 8px;
+      font-size: 1.1rem;
+      color: var(--primary);
+      font-weight: 800;
+      text-shadow: 0 1px 4px rgba(253, 251, 248, 0.9);
+    }
+
+    .feature-bullets li::before {
+      content: "✦";
+      position: absolute;
+      right: 0;
+      color: var(--accent);
+      font-size: 1.2rem;
+    }
+
+    .cta-btn-group {
+      display: flex;
+      gap: 16px;
+      margin-top: 15px;
+    }
+
+    .btn-main {
+      background: var(--primary);
+      color: #FFF;
+      padding: 14px 32px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.05rem;
+      box-shadow: 0 10px 25px rgba(66, 10, 20, 0.25);
+      transition: all 0.3s ease;
+      border: 1px solid var(--accent);
+    }
+
+    .btn-main:hover {
+      background: var(--accent);
+      color: var(--primary);
+      transform: translateY(-3px);
+    }
+
+    .btn-outline {
+      background: rgba(253, 251, 248, 0.85);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      padding: 14px 32px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.05rem;
+      transition: all 0.3s ease;
+    }
+
+    /* قسم الباركود الخاص والمستقل */
+    .qr-card-section {
+      background: rgba(253, 251, 248, 0.9);
+      backdrop-filter: blur(12px);
+      padding: 30px 40px;
+      border-radius: 30px;
+      border: 1px solid var(--accent);
+      box-shadow: 0 15px 40px rgba(66, 10, 20, 0.1);
+      display: inline-block;
+      text-align: center;
+    }
+
+    .qr-card-section img {
+      width: 190px;
+      height: 190px;
+      object-fit: contain;
+    }
+
+    .qr-card-title {
+      font-size: 1.2rem;
+      color: var(--primary);
+      font-weight: 800;
+      margin-top: 12px;
+    }
+
+    footer {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 30px 20px;
+      background: rgba(253, 251, 248, 0.95);
+      border-top: 1px solid rgba(212, 163, 89, 0.2);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .scene-section {
+        padding: 110px 5vw 40px;
+        justify-content: center;
+      }
+      .pos-top-right, .pos-top-left, .pos-bottom-right, .pos-bottom-left, .pos-center-bottom {
+        align-self: center;
+        text-align: center;
+        max-width: 100%;
+      }
+      .scene-title { font-size: 2.2rem; }
+      .scene-desc { font-size: 1.05rem; }
+      .cta-btn-group { justify-content: center; flex-direction: column; }
+      .feature-bullets li { padding-right: 0; }
+      .feature-bullets li::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar الشفاف متضمناً الأقسام الرئيسية -->
+  <nav class="navbar">
+    <a href="#">
+      <img src="logo.png" alt="مَشهد | MASHHAD" class="brand-logo-img">
+    </a>
+    <ul class="nav-links">
+      <li><a href="#hero">الروبوت</a></li>
+      <li><a href="#menu">المنيو الذكي</a></li>
+      <li><a href="#graduation">التخرج</a></li>
+      <li><a href="#corporate">الشركات</a></li>
+      <li><a href="#analytics">الإحصائيات</a></li>
+      <li><a href="#qrcode">الباركود</a></li>
+    </ul>
+    <a href="https://wa.me/" class="nav-btn">تواصل معنا</a>
+  </nav>
+
+  <!-- خلفية الفيديوهات ثلاثية الأبعاد (تتوقف عند آخر لقطة ولا تتكرر) -->
+  <div class="bg-video-container">
+    <video id="video-1" class="active" src="videos/hero-robot.mp4" autoplay muted playsinline></video>
+    <video id="video-2" src="videos/smart-menu.mp4" muted playsinline></video>
+    <video id="video-3" src="videos/graduation.mp4" muted playsinline></video>
+    <video id="video-4" src="videos/brochure.mp4" muted playsinline></video>
+    <video id="video-5" src="videos/analytics.mp4" muted playsinline></video>
+    <video id="video-6" src="videos/final-logo.mp4" muted playsinline></video>
+  </div>
+
+  <!-- زر الصوت للجوال -->
+  <button class="mobile-audio-btn" onclick="triggerRobotSpeech()" title="استمع للروبوت">
+    🔊
+  </button>
+
+  <!-- المشهد 1: الغلاف والروبوت الناطق (الروبوت بارز بالوسط دون نصوص عليه) -->
+  <section class="scene-section active" id="hero" data-video="video-1">
+    <div class="pos-top-right">
+      <div class="anim-item"><span class="scene-tag">مَشهد الرقمي 2027</span></div>
+      <div class="anim-item"><h1 class="scene-title">حول مطبوعاتك إلى مشاهد تفاعلية.</h1></div>
+    </div>
+    <div class="pos-bottom-left">
+      <div class="anim-item">
+        <p class="scene-desc">منصة واحدة تحول المنيو، البروفايل، وبروشور التخرج إلى رابط ذكي و QR Code بأسلوب 2027.</p>
+      </div>
+      <div class="anim-item">
+        <div class="cta-btn-group">
+          <a href="#menu" class="btn-main">استكشف المشاهد الرقمية</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- المشهد 2: المنيو الذكي (نصوص موزعة أقصى اليمين) -->
+  <section class="scene-section" id="menu" data-video="video-2">
+    <div class="pos-top-right">
+      <div class="anim-item"><span class="scene-tag">01 / المطاعم والكافيهات</span></div>
+      <div class="anim-item"><h2 class="scene-title">الضيف يطلب ويدفع وهو في مكانه.</h2></div>
+    </div>
+    <div class="pos-bottom-right">
+      <div class="anim-item">
+        <p class="scene-desc">منيو رقمي تفاعلي فائق السرعة عبر الآيفون، مدعوم بالصور الحية والتحديثات الفورية للأسعار والوجبات المتاحة.</p>
+      </div>
+      <div class="anim-item">
+        <ul class="feature-bullets">
+          <li>طلب فوري مباشر وتجربة تصفح سلسة.</li>
+          <li>ربط مع بوابات الدفع الإلكترونية بكل أمان.</li>
+          <li>تعديل الأصناف والأسعار في أي لحظة.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- المشهد 3: بروشورات التخرج الرقمية (نصوص موزعة أقصى اليسار) -->
+  <section class="scene-section" id="graduation" data-video="video-3">
+    <div class="pos-top-left">
+      <div class="anim-item"><span class="scene-tag">02 / التخرج والتوثيق</span></div>
+      <div class="anim-item"><h2 class="scene-title">توثيق سينمائي يبقى للأبد.</h2></div>
+    </div>
+    <div class="pos-bottom-left">
+      <div class="anim-item">
+        <p class="scene-desc">خلّد أجمل لحظات العمر بأسلوب رقمي فاخر لا يزول بزوال الورق. توثيق رقمي شامل للدفعة ولالطالب في رابط واحد.</p>
+      </div>
+      <div class="anim-item">
+        <ul class="feature-bullets">
+          <li><strong>مشهد الدفعة:</strong> كلمة الدفعة، قائمة الخريجين، وألبوم الصور.</li>
+          <li><strong>مشهد الطالب:</strong> رابط خاص يتضمن تخصصه، صورته، وإهداءاته.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- المشهد 4: البروشور الرقمي للشركات (نصوص موزعة بالأسفل واليمين) -->
+  <section class="scene-section" id="corporate" data-video="video-4">
+    <div class="pos-top-right">
+      <div class="anim-item"><span class="scene-tag">03 / الشركات والأعمال</span></div>
+      <div class="anim-item"><h2 class="scene-title">بروفايل شركتك في جوال عميلك.</h2></div>
+    </div>
+    <div class="pos-bottom-right">
+      <div class="anim-item">
+        <p class="scene-desc">استبدل الملفات الورقية الثقيلة ببروفايل رقمي تفاعلي خفيف وجذاب يعكس فخامة علامتك التجارية.</p>
+      </div>
+      <div class="anim-item">
+        <ul class="feature-bullets">
+          <li>عرض تفاعلي سريع لمشاريعك وخدماتك.</li>
+          <li>دمج كروت العمل الزجاجية في هاتف العميل.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- المشهد 5: الإحصائيات (نصوص موزعة عمودياً أقصى اليسار) -->
+  <section class="scene-section" id="analytics" data-video="video-5">
+    <div class="pos-top-left">
+      <div class="anim-item"><span class="scene-tag">04 / لوحة التحكم الذكية</span></div>
+      <div class="anim-item"><h2 class="scene-title">اعرف تفاصيل من يتصفح مشهدك.</h2></div>
+    </div>
+    <div class="pos-bottom-left">
+      <div class="anim-item">
+        <p class="scene-desc">لوحة تحكم تحليلية دقيقة تمنحك رؤية كاملة حول تفاعل الزوار مع محتواك الرقمي لتطوير أعمالك باستمرار.</p>
+      </div>
+      <div class="anim-item">
+        <ul class="feature-bullets">
+          <li>رصد دقيق لعدد المشاهدات والزيارات اليومية.</li>
+          <li>معرفة أوقات الذروة ونوعية أجهزة الزوار.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- المشهد 6: قسم الباركود والخاتمة المستقل -->
+  <section class="scene-section" id="qrcode" data-video="video-6">
+    <div class="pos-center-bottom">
+      <div class="anim-item">
+        <h2 class="scene-title">جاهز لتجسيد أول مشهد رقمي؟</h2>
+        <p class="scene-desc" style="margin-bottom: 20px;">فكرتك ومحتواك، نحولها إلى مشهد سينمائي فاخر خلال 24 ساعة.</p>
+      </div>
+      
+      <!-- كارت الباركود الخاص والمستقل -->
+      <div class="anim-item">
+        <div class="qr-card-section">
+          <img src="mashhad-qr.png" alt="QR Code MASHHAD">
+          <div class="qr-card-title">امسح الكود لتجربة المشهد المباشر</div>
+        </div>
+      </div>
+
+      <div class="anim-item">
+        <div class="cta-btn-group" style="justify-content: center; margin-top: 25px;">
+          <a href="https://wa.me/" class="btn-main">تواصل معنا عبر واتساب</a>
+          <a href="http://MASHHAD.CO" class="btn-outline">MASHHAD.CO</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>MASHHAD - Digital Scenes Platform - 2026</p>
+  </footer>
+
+  <script>
+    const sections = document.querySelectorAll('.scene-section');
+    const videos = document.querySelectorAll('.bg-video-container video');
+    let hasSpoken = false;
+
+    function triggerRobotSpeech() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const text = "أهلاً بك في مَشهد! نحول محتواك إلى تجربة رقمية تفاعلية بأسلوب 2027. استكشف المشاهد بالأسفل.";
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ar-SA';
+        utterance.pitch = 1.2;
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          sections.forEach(s => s.classList.remove('active'));
+          entry.target.classList.add('active');
+
+          const targetVideoId = entry.target.getAttribute('data-video');
+          videos.forEach(v => {
+            if (v.id === targetVideoId) {
+              v.classList.add('active');
+              v.currentTime = 0;
+              v.play().catch(() => {});
+            } else {
+              v.classList.remove('active');
+            }
+          });
+
+          if (targetVideoId === 'video-1' && !hasSpoken) {
+            triggerRobotSpeech();
+            hasSpoken = true;
+          }
+        }
+      });
+    }, { threshold: 0.4 });
+
+    sections.forEach(section => observer.observe(section));
+  </script>
+</body>
+</html>
